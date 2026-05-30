@@ -28,8 +28,8 @@ if [ -f /swapfile ]; then
     echo -e "${GREEN}✓ Swap file (/swapfile) already exists.${NC}"
 else
     echo -e "${BLUE}→ Creating a 2GB swap file (emergency virtual memory)...${NC}"
-    # Allocate a 2GB file
-    sudo fallocate -l 2G /swapfile
+    # Allocate a 3GB file
+    sudo fallocate -l 3G /swapfile
     
     # Restrict permissions
     sudo chmod 600 /swapfile
@@ -44,7 +44,7 @@ else
     if ! grep -q "/swapfile" /etc/fstab; then
         echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
     fi
-    echo -e "${GREEN}✓ 2GB swap memory successfully created and activated!${NC}"
+    echo -e "${GREEN}✓ 3GB swap memory successfully created and activated!${NC}"
 fi
 
 # Show memory summary
