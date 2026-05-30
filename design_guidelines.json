@@ -1,0 +1,124 @@
+{
+  "project_name": "SkillSphere",
+  "theme": "DARK",
+  "archetype": "Archetype 4 (Swiss & High-Contrast) - Linear/Framer Variant",
+  "typography": {
+    "fonts": {
+      "heading": "Outfit, sans-serif",
+      "body": "Manrope, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-semibold",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-medium",
+      "h3": "text-xl sm:text-2xl tracking-tight font-medium",
+      "h4": "text-lg sm:text-xl font-medium",
+      "body": "text-base leading-relaxed text-zinc-400",
+      "label": "text-xs uppercase tracking-[0.2em] text-zinc-500 font-semibold"
+    },
+    "installation": "yarn add @fontsource/outfit @fontsource/manrope @fontsource/jetbrains-mono"
+  },
+  "colors": {
+    "background": "#09090B",
+    "surface": "#121214",
+    "surface_hover": "#1F1F22",
+    "border": "rgba(255, 255, 255, 0.08)",
+    "primary": "#6366F1",
+    "primary_hover": "#818CF8",
+    "text": {
+      "primary": "#FAFAFA",
+      "secondary": "#A1A1AA",
+      "muted": "#71717A"
+    },
+    "semantic": {
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444"
+    }
+  },
+  "layout": {
+    "spacing": "Generous scaling: p-4 for internal widgets, p-8 to p-12 for section blocks. Use bento grid patterns.",
+    "border_radius": "rounded-md (6px) or rounded-lg (8px) for structural sharpness.",
+    "shadows": "Ambient subtle shadows only. shadow-md on popovers, none on cards (rely on borders)."
+  },
+  "surfaces": {
+    "header": "Crystal Glass: bg-zinc-950/60 backdrop-blur-xl border-b border-white/10",
+    "cards": "Solid flat bg-zinc-900 border border-white/5",
+    "modals": "Solid flat bg-zinc-950 border border-white/10 shadow-2xl shadow-black/50"
+  },
+  "interactions": {
+    "hover": "Subtle background lightening (hover:bg-zinc-800) and text brightening (hover:text-white). For buttons, -translate-y-[1px].",
+    "focus": "focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none",
+    "motion": "Framer Motion for layout transitions, staggerChildren for lists."
+  },
+  "component_strategy": {
+    "ui_library": "Shadcn UI + Tailwind CSS",
+    "buttons": "Flat, text-sm, font-medium. Primary has bg-indigo-500 text-white hover:bg-indigo-400. Secondary uses bg-zinc-800 text-zinc-100 hover:bg-zinc-700.",
+    "inputs": "bg-zinc-950 border border-white/10 focus-visible:border-indigo-500 rounded-md",
+    "tables": "Dense rows, border-b border-white/5, text-sm. No side borders.",
+    "charts": "Recharts. Use monochromatic tones + primary accent for data lines.",
+    "icons": "lucide-react"
+  },
+  "media": {
+    "images": {
+      "hero_background": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/dc290901-7081-495e-be3b-755453cb236d/images/d314e4623558e3d7f8d83b71fdfd9cf91d9e36ab0e88a3ab0ed88d616953660e.png",
+        "usage": "Use in the marketing landing page hero section, overlaid with bg-black/60 for text contrast."
+      },
+      "ai_avatar": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/dc290901-7081-495e-be3b-755453cb236d/images/6f3ca7d8bd03b634460a1e91176ae61516c0b1117a181e468cab58627129e4f8.png",
+        "usage": "Use as the avatar/icon for the AI Assistant chat interface and roadmap generation features."
+      },
+      "course_placeholder_tech": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/dc290901-7081-495e-be3b-755453cb236d/images/e4af241411c508ddbfc4a9a29ad6e4cdf0b55c0984adaf621b7a026d6fef898e.png",
+        "usage": "Default thumbnail for Technical / Developer courses."
+      },
+      "course_placeholder_business": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/dc290901-7081-495e-be3b-755453cb236d/images/ad8603bd9925e7fec9be69f311fead56b3477d8aca56ace2ebc01b137231e787.png",
+        "usage": "Default thumbnail for Business / Analytics courses."
+      },
+      "logos": [
+        {
+          "url": "https://images.unsplash.com/photo-1760386129108-d17b9cdfc4fa?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwY29tcGFueSUyMGxvZ28lMjB3aGl0ZXxlbnwwfHx8fDE3Nzk5Mzk2MjV8MA&ixlib=rb-4.1.0&q=85",
+          "usage": "Company logo for Job listings or Partner sections (Audible)."
+        },
+        {
+          "url": "https://images.pexels.com/photos/15863000/pexels-photo-15863000.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+          "usage": "Company logo for Job listings or Partner sections (OpenAI)."
+        },
+        {
+          "url": "https://images.pexels.com/photos/21898300/pexels-photo-21898300.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+          "usage": "Company logo for Job listings or Partner sections (Pexels)."
+        }
+      ],
+      "portraits": [
+        {
+          "url": "https://images.unsplash.com/photo-1506863530036-1efeddceb993?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMHRlY2h8ZW58MHx8fHwxNzc5OTM5NjI1fDA&ixlib=rb-4.1.0&q=85",
+          "usage": "Trainer profile picture / Testimonial."
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1581841064838-a470c740e8ee?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHwyfHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdCUyMHRlY2h8ZW58MHx8fHwxNzc5OTM5NjI1fDA&ixlib=rb-4.1.0&q=85",
+          "usage": "Student profile picture / Testimonial."
+        },
+        {
+          "url": "https://images.pexels.com/photos/18321496/pexels-photo-18321496.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+          "usage": "Recruiter profile picture."
+        }
+      ]
+    }
+  },
+  "specific_page_rules": {
+    "marketing_landing": "Highly animated. Use Framer Motion. Hero text must be massive and left-aligned or perfectly centered with high tension. Use the 'Tracing Beam' effect for pricing tables.",
+    "student_dashboard": "Strict bento grid layout (Control Room style). Focus heavily on current progress. Dense metrics, lots of whitespace around the actual dashboard shell.",
+    "course_player": "Dark theme everywhere. Sidebar for curriculum (bg-zinc-950), main area for video player (bg-black).",
+    "ai_assistant": "Should feel like a premium command center. Soft glowing indigo elements around the chat. Multi-purpose tab switcher (doubt solver, resume reviewer, roadmap) must be snappy."
+  },
+  "critical_directives": [
+    "ALL interactive elements MUST include data-testid.",
+    "Do NOT use pure black (#000000) except for video player backgrounds; use #09090B.",
+    "Avoid standard Bootstrap/equal-width columns. Use asymmetric 12-column bento layouts.",
+    "Forms must use Shadcn customized to have flat aesthetics.",
+    "Hover states must be explicit, e.g., hover:bg-zinc-800 hover:text-white.",
+    "All containers with borders must have internal padding (p-6 or p-8)."
+  ]
+}

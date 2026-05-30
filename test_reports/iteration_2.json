@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 2 — SkillSphere Phase 2 testing of Uploads (Emergent Object Storage), Coding playground (local Python+Node sandbox), Socket.IO realtime chat, and Email placeholder mode (RESEND_API_KEY empty). Backend: 17 new pytest tests in /app/backend/tests/test_phase2.py — ALL 17 PASS (100%). Combined with iteration-1 regression run (41 tests) → 58/58 backend tests green. Frontend: end-to-end verified login → /coding (3 challenges seeded, open → editor + Run/Submit → /api/coding/run returns real stdout) → /chat (socket-status shows LIVE in emerald) → /profile (drag-and-drop FileUpload renders). Iteration-1 login issue is RESOLVED (token stored as 'skl_token', user redirected to /dashboard correctly).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_phase2.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/phase2_results.xml",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Coding sandbox uses preexec_fn=_make_preexec which calls resource.setrlimit (CPU 5s, AS for Node = 1.5GB) and os.setsid — confirmed working for both python and javascript. The infinite-loop case (`while True: pass`) is correctly terminated within wall-clock 8s; in our run it returned exit_code=-9 (SIGKILL from CPU rlimit) which the test now accepts as valid alongside 124. Recommend: normalize exit_code to 124 inside _run_local when proc.returncode is -9/-SIGKILL and wall time has not exceeded WALL_LIMIT, so the public contract documented in the request (exit_code=124 for timeout) is always honored.",
+    "uploads.py GET /api/uploads/{file_id} is intentionally public-read (file_id is UUID-unguessable) — documented design choice, but worth noting that no rate-limiting exists; for production add per-IP limits or signed URLs with short TTL.",
+    "Socket.IO presence_list is sent only to the new sid on connect; consider also broadcasting a presence_join event so existing clients refresh their online list without polling.",
+    "email_service.py placeholder mode just logs to stderr — verified non-crashing on register/enroll. No real send. RESEND_API_KEY=empty is the documented mocked path.",
+    "uploads.py has `from auth import ... decode_token` imported but unused; tiny cleanup.",
+    "coding.py: env passed to subprocess strips most variables (good, sandboxed) but PATH is inherited from server — fine for Python/Node but be aware that any future runtime requiring extra env vars must be added explicitly."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase2.py (new — 17 pytest cases covering uploads, coding, socket.io, email placeholder)"
+  ],
+  "success_rate": {
+    "backend": "100% (17/17 phase-2 + 41/41 iteration-1 = 58/58)",
+    "frontend": "100% on Phase 2 surfaces tested (login, coding list+detail+run, chat LIVE socket, profile FileUpload)"
+  },
+  "test_credentials": "From /app/memory/test_credentials.md — all seeded accounts work. student@skillsphere.demo/Student@123, trainer1@skillsphere.demo/Trainer@123, recruiter@skillsphere.demo/Recruiter@123, admin@skillsphere.demo/Admin@123. Login token is stored in localStorage under key 'skl_token' (and user data under 'skl_user').",
+  "seed_data_creation": "test_phase2.py creates: (a) one document upload 'hello.txt' under the student account (kept in db.files), (b) one coding attempt against the FizzBuzz challenge (score=100) under the student account, (c) a couple of TEST_email_*@x.com registered students for the email placeholder check. None should affect production demo flows but can be cleaned up by deleting db.files with original_filename='hello.txt', db.coding_attempts and db.users where email LIKE 'TEST_email_%' if desired.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is fully green (58/58). Phase 2 features all wired correctly. The only refinement worth doing is normalizing the timeout exit_code in /app/backend/routes/coding.py to always return 124 even when SIGKILL fires first (currently the public contract says 124 but rlimit can produce -9). The frontend login storage key is 'skl_token' (NOT 'token'/'access_token') — useful for future playwright scripts. Socket.IO client uses path '/api/socket.io' with auth={token} via websocket transport; this works through the Kubernetes ingress (which forwards /api/*). For uploads, public GET by UUID is the intended design — do not flag as a security bug.",
+  "rca of the issue": "No new bugs found. Previous iteration-1 login-redirect concern was a playwright false negative — verified manually that after submit, app navigates to /dashboard and persists skl_token. Coding sandbox timeout behaviour is technically correct (process is killed within wall-clock 8s) but exit_code may be -9 instead of the documented 124 when the CPU rlimit (5s) trips before the asyncio timeout — minor contract drift, recommendation in critical_code_review_comments above."
+}

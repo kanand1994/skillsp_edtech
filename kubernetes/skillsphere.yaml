@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: skillsphere
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: skillsphere-config
+  namespace: skillsphere
+data:
+  DB_NAME: "skillsphere"
+  CORS_ORIGINS: "*"
+  APP_NAME: "skillsphere"
+  SENDER_EMAIL: "onboarding@resend.dev"
+  SUPERADMIN_ROUTE: "core-access-x7k9m2"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: skillsphere-secrets
+  namespace: skillsphere
+type: Opaque
+stringData:
+  JWT_SECRET: "replace-with-random-64-char-string"
+  EMERGENT_LLM_KEY: "sk-emergent-XXXX"
+  STRIPE_API_KEY: "sk_live_or_test_XXXX"
+  SUPERADMIN_EMAIL: "root@skillsphere.internal"
+  SUPERADMIN_PASSWORD: "REPLACE_ME"
+  SUPERADMIN_SECRET: "REPLACE_ME"
+  RESEND_API_KEY: ""
+  MONGO_URL: "mongodb://mongodb.skillsphere.svc.cluster.local:27017"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: skillsphere
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: backend } }
+  template:
+    metadata: { labels: { app: backend } }
+    spec:
+      containers:
+        - name: backend
+          image: skillsphere-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports: [{ containerPort: 8001 }]
+          envFrom:
+            - configMapRef: { name: skillsphere-config }
+            - secretRef: { name: skillsphere-secrets }
+          resources:
+            requests: { cpu: "200m", memory: "256Mi" }
+            limits:   { cpu: "1000m", memory: "1Gi" }
+          readinessProbe:
+            httpGet: { path: /api/health, port: 8001 }
+            initialDelaySeconds: 8
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /api/health, port: 8001 }
+            initialDelaySeconds: 20
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: skillsphere
+spec:
+  selector: { app: backend }
+  ports: [{ port: 8001, targetPort: 8001 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: skillsphere
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: frontend } }
+  template:
+    metadata: { labels: { app: frontend } }
+    spec:
+      containers:
+        - name: frontend
+          image: skillsphere-frontend:latest
+          ports: [{ containerPort: 3000 }]
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: skillsphere
+spec:
+  selector: { app: frontend }
+  ports: [{ port: 3000, targetPort: 3000 }]
+---
+# HPA for backend
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: skillsphere
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
+---
+# Ingress (requires nginx-ingress controller installed in cluster)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: skillsphere-ingress
+  namespace: skillsphere
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "250m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: skillsphere.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service: { name: backend, port: { number: 8001 } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: frontend, port: { number: 3000 } }

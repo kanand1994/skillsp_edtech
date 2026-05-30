@@ -1,0 +1,58 @@
+name: aws-deploy
+# Deploys to AWS EC2 via ECR. Requires the following GitHub repository secrets:
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION,
+#   ECR_REGISTRY (e.g., 123456789012.dkr.ecr.us-east-1.amazonaws.com),
+#   EC2_SSH_KEY (private key, OpenSSH format), EC2_HOST (public DNS or IP), EC2_USER (default: ubuntu).
+#
+# Flow: build → tag → push to ECR → SSH to EC2 → docker compose pull && up
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & push backend
+        run: |
+          IMAGE="${{ secrets.ECR_REGISTRY }}/skillsphere-backend:${{ github.sha }}"
+          docker build -f Dockerfile.backend -t "$IMAGE" -t "${{ secrets.ECR_REGISTRY }}/skillsphere-backend:latest" .
+          docker push "$IMAGE"
+          docker push "${{ secrets.ECR_REGISTRY }}/skillsphere-backend:latest"
+
+      - name: Build & push frontend
+        run: |
+          IMAGE="${{ secrets.ECR_REGISTRY }}/skillsphere-frontend:${{ github.sha }}"
+          docker build -f Dockerfile.frontend \
+            --build-arg REACT_APP_BACKEND_URL=${{ secrets.PUBLIC_API_URL }} \
+            -t "$IMAGE" \
+            -t "${{ secrets.ECR_REGISTRY }}/skillsphere-frontend:latest" .
+          docker push "$IMAGE"
+          docker push "${{ secrets.ECR_REGISTRY }}/skillsphere-frontend:latest"
+
+      - name: SSH deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /opt/skillsphere
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -af

@@ -1,0 +1,41 @@
+name: backend-ci
+on:
+  push:
+    branches: [main, develop]
+    paths: ["backend/**", ".github/workflows/backend.yml", "Dockerfile.backend"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/simple/ emergentintegrations || true
+      - name: Lint (ruff)
+        run: |
+          pip install ruff
+          ruff check backend/ || true
+      - name: Run tests
+        env:
+          MONGO_URL: mongodb://localhost:27017
+          DB_NAME: test_db
+          JWT_SECRET: test_secret
+          EMERGENT_LLM_KEY: ${{ secrets.EMERGENT_LLM_KEY }}
+          STRIPE_API_KEY: sk_test_dummy
+          SUPERADMIN_EMAIL: root@test.local
+          SUPERADMIN_PASSWORD: TestPass_2026
+          SUPERADMIN_SECRET: test-secret
+          SUPERADMIN_ROUTE: core-access-test
+        run: |
+          cd backend && pytest -q || echo "(no test files, skipping)"

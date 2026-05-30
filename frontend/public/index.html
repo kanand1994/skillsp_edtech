@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#09090B" />
+        <meta name="description" content="SkillSphere — AI-powered learning & job platform. Learn the skills. Land the job. Built with AI." />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="SkillSphere" />
+        <title>SkillSphere — Learn. Build. Get hired.</title>
+        <script>
+        // Pre-React early error suppression. Runs BEFORE react-error-overlay (CRA dev) registers,
+        // so we can stop the red dev overlay for axios 401s / known-benign network failures.
+        (function () {
+            function looksLikeAxios401(reason) {
+                try {
+                    if (!reason) return false;
+                    if (reason.__handled === true) return true;
+                    var status = reason && reason.response && reason.response.status;
+                    if (status === 401) return true;
+                    var msg = (reason && (reason.message || reason)) + "";
+                    return /Request failed with status code 401/i.test(msg);
+                } catch (e) { return false; }
+            }
+            window.addEventListener("unhandledrejection", function (e) {
+                if (looksLikeAxios401(e.reason)) { e.preventDefault(); e.stopImmediatePropagation && e.stopImmediatePropagation(); }
+            }, true);
+            window.addEventListener("error", function (e) {
+                if (e.error instanceof DOMException && e.error.name === "DataCloneError" && e.message && e.message.includes("PerformanceServerTiming")) {
+                    e.preventDefault(); e.stopImmediatePropagation && e.stopImmediatePropagation();
+                }
+            }, true);
+        })();
+        </script>
+    </head>
+    <body>
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+        <div id="root"></div>
+    </body>
+</html>

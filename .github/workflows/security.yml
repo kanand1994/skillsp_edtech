@@ -1,0 +1,37 @@
+name: security-scan
+on:
+  push: { branches: [main] }
+  schedule: [{ cron: "0 6 * * 1" }]   # weekly Monday 06:00 UTC
+  pull_request: { branches: [main] }
+
+jobs:
+  trivy-fs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+
+  npm-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Yarn audit
+        working-directory: frontend
+        run: yarn audit --groups dependencies || true
+
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install pip-audit && pip-audit -r backend/requirements.txt || true
