@@ -24,25 +24,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Set ECR base registry
+        id: ecr
+        run: echo "registry=$(echo '${{ secrets.ECR_REGISTRY }}' | cut -d'/' -f1)" >> $GITHUB_OUTPUT
+
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build & push backend
         run: |
           IMAGE="${{ secrets.ECR_REGISTRY }}/skillsphere-backend:${{ github.sha }}"
-          docker build -f Dockerfile.backend -t "$IMAGE" -t "${{ secrets.ECR_REGISTRY }}/skillsphere-backend:latest" .
-          docker push "$IMAGE"
-          docker push "${{ secrets.ECR_REGISTRY }}/skillsphere-backend:latest"
+          BACKEND_REPO="${{ steps.ecr.outputs.registry }}/skillsphere-backend"
+          docker build -f Dockerfile.backend -t "$BACKEND_REPO:${{ github.sha }}" -t "$BACKEND_REPO:latest" .
+          docker push "$BACKEND_REPO:${{ github.sha }}"
+          docker push "$BACKEND_REPO:latest"
 
       - name: Build & push frontend
         run: |
-          IMAGE="${{ secrets.ECR_REGISTRY }}/skillsphere-frontend:${{ github.sha }}"
+          FRONTEND_REPO="${{ steps.ecr.outputs.registry }}/skillsphere-frontend"
           docker build -f Dockerfile.frontend \
             --build-arg REACT_APP_BACKEND_URL=${{ secrets.PUBLIC_API_URL }} \
-            -t "$IMAGE" \
-            -t "${{ secrets.ECR_REGISTRY }}/skillsphere-frontend:latest" .
-          docker push "$IMAGE"
-          docker push "${{ secrets.ECR_REGISTRY }}/skillsphere-frontend:latest"
+            -t "$FRONTEND_REPO:${{ github.sha }}" \
+            -t "$FRONTEND_REPO:latest" .
+          docker push "$FRONTEND_REPO:${{ github.sha }}"
+          docker push "$FRONTEND_REPO:latest"
 
       - name: SSH deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -52,7 +57,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /opt/skillsphere
-            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+            ECR_BASE=$(echo '${{ secrets.ECR_REGISTRY }}' | cut -d'/' -f1)
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_BASE
             docker compose pull
             docker compose up -d --remove-orphans
             docker image prune -af
