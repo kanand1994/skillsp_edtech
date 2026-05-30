@@ -31,9 +31,7 @@ services:
     networks: [skl]
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
+    image: ${BACKEND_IMAGE:-skillsphere-backend:latest}
     container_name: skl-backend
     restart: unless-stopped
     environment:
@@ -83,11 +81,7 @@ services:
     #   docker exec skl-piston cli/index.js ppman install python javascript typescript java c++ c go rust ruby
 
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-      args:
-        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost}
+    image: ${FRONTEND_IMAGE:-skillsphere-frontend:latest}
     container_name: skl-frontend
     restart: unless-stopped
     expose: ["3000"]
