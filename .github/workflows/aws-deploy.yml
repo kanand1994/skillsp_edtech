@@ -59,6 +59,10 @@ jobs:
             cd /opt/skillsphere
             ECR_BASE=$(echo '${{ secrets.ECR_REGISTRY }}' | cut -d'/' -f1)
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR_BASE
-            docker compose pull
-            docker compose up -d --remove-orphans
+            sudo systemctl stop nginx 2>/dev/null || true
+            export BACKEND_IMAGE=$ECR_BASE/skillsphere-backend:latest
+            export FRONTEND_IMAGE=$ECR_BASE/skillsphere-frontend:latest
+            docker compose --env-file .env pull
+            docker compose --env-file .env up -d --remove-orphans
             docker image prune -af
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
