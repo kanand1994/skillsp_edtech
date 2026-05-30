@@ -19,6 +19,9 @@ function getRouteSlug() {
   return m ? m[1] : "";
 }
 
+const slug = getRouteSlug();
+const BASE = `${BACKEND_URL || ""}/api/private/internal/${slug}`;
+
 export default function SuperAdmin() {
   const [token, setToken] = useState(sessionStorage.getItem("sa_tok") || "");
   const [secret, setSecret] = useState(sessionStorage.getItem("sa_sec") || "");
